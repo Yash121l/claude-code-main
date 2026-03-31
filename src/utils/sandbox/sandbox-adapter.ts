@@ -4,22 +4,57 @@
  * settings system, tool integration, and additional features.
  */
 
-import type {
-  FsReadRestrictionConfig,
-  FsWriteRestrictionConfig,
-  IgnoreViolationsConfig,
-  NetworkHostPattern,
-  NetworkRestrictionConfig,
-  SandboxAskCallback,
-  SandboxDependencyCheck,
-  SandboxRuntimeConfig,
-  SandboxViolationEvent,
-} from '@anthropic-ai/sandbox-runtime'
-import {
-  SandboxManager as BaseSandboxManager,
-  SandboxRuntimeConfigSchema,
-  SandboxViolationStore,
-} from '@anthropic-ai/sandbox-runtime'
+// @anthropic-ai/sandbox-runtime is a private package, using stubs
+// import type {
+//   FsReadRestrictionConfig,
+//   FsWriteRestrictionConfig,
+//   IgnoreViolationsConfig,
+//   NetworkHostPattern,
+//   NetworkRestrictionConfig,
+//   SandboxAskCallback,
+//   SandboxDependencyCheck,
+//   SandboxRuntimeConfig,
+//   SandboxViolationEvent,
+// } from '@anthropic-ai/sandbox-runtime'
+// import {
+//   SandboxManager as BaseSandboxManager,
+//   SandboxRuntimeConfigSchema,
+//   SandboxViolationStore,
+// } from '@anthropic-ai/sandbox-runtime'
+type FsReadRestrictionConfig = unknown
+type FsWriteRestrictionConfig = unknown
+type IgnoreViolationsConfig = unknown
+type NetworkHostPattern = { host: string }
+type NetworkRestrictionConfig = unknown
+type SandboxAskCallback = (pattern: NetworkHostPattern) => Promise<boolean>
+type SandboxDependencyCheck = { errors: string[]; warnings: string[] }
+type SandboxRuntimeConfig = Record<string, unknown>
+type SandboxViolationEvent = unknown
+class SandboxViolationStore {}
+const SandboxRuntimeConfigSchema = {}
+const BaseSandboxManager = {
+  checkDependencies: (_opts?: unknown): SandboxDependencyCheck => ({ errors: [], warnings: [] }),
+  isSupportedPlatform: (): boolean => false,
+  initialize: async (_config?: unknown, _cb?: unknown): Promise<void> => {},
+  updateConfig: (_config: unknown): void => {},
+  wrapWithSandbox: async (command: string, _binShell?: string, _customConfig?: unknown, _signal?: unknown): Promise<string> => command,
+  getFsReadConfig: (): FsReadRestrictionConfig => ({}),
+  getFsWriteConfig: (): FsWriteRestrictionConfig => ({}),
+  getNetworkRestrictionConfig: (): NetworkRestrictionConfig => ({}),
+  getIgnoreViolations: (): IgnoreViolationsConfig | undefined => undefined,
+  getAllowUnixSockets: (): string[] | undefined => undefined,
+  getAllowLocalBinding: (): boolean | undefined => undefined,
+  getEnableWeakerNestedSandbox: (): boolean | undefined => undefined,
+  getProxyPort: (): number | undefined => undefined,
+  getSocksProxyPort: (): number | undefined => undefined,
+  getLinuxHttpSocketPath: (): string | undefined => undefined,
+  getLinuxSocksSocketPath: (): string | undefined => undefined,
+  waitForNetworkInitialization: async (): Promise<boolean> => false,
+  getSandboxViolationStore: (): SandboxViolationStore => new SandboxViolationStore(),
+  annotateStderrWithSandboxFailures: (_command: string, stderr: string): string => stderr,
+  cleanupAfterCommand: (): void => {},
+  reset: async (): Promise<void> => {},
+}
 import { rmSync, statSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { memoize } from 'lodash-es'

@@ -1,7 +1,15 @@
-import {
-  buildComputerUseTools,
-  createComputerUseMcpServer,
-} from '@ant/computer-use-mcp'
+// import {
+//   buildComputerUseTools,
+//   createComputerUseMcpServer,
+// } from '@ant/computer-use-mcp'
+const buildComputerUseTools = (
+  _adapter: unknown,
+  _mode: unknown,
+  _apps?: unknown,
+): { name: string }[] => []
+const createComputerUseMcpServer = (_adapter: unknown, _mode: unknown): never => {
+  throw new Error('@ant/computer-use-mcp is not available')
+}
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import { homedir } from 'os'

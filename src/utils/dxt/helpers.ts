@@ -1,4 +1,11 @@
-import type { McpbManifest } from '@anthropic-ai/mcpb'
+// import type { McpbManifest } from '@anthropic-ai/mcpb'
+export type McpbManifest = {
+  name: string
+  version: string
+  author: { name: string }
+  server?: unknown
+  user_config?: Record<string, unknown>
+}
 import { errorMessage } from '../errors.js'
 import { jsonParse } from '../slowOperations.js'
 
@@ -13,24 +20,11 @@ import { jsonParse } from '../slowOperations.js'
 export async function validateManifest(
   manifestJson: unknown,
 ): Promise<McpbManifest> {
-  const { McpbManifestSchema } = await import('@anthropic-ai/mcpb')
-  const parseResult = McpbManifestSchema.safeParse(manifestJson)
-
-  if (!parseResult.success) {
-    const errors = parseResult.error.flatten()
-    const errorMessages = [
-      ...Object.entries(errors.fieldErrors).map(
-        ([field, errs]) => `${field}: ${errs?.join(', ')}`,
-      ),
-      ...(errors.formErrors || []),
-    ]
-      .filter(Boolean)
-      .join('; ')
-
-    throw new Error(`Invalid manifest: ${errorMessages}`)
+  // @anthropic-ai/mcpb is a private package, using basic validation stub
+  if (typeof manifestJson !== 'object' || manifestJson === null) {
+    throw new Error('Invalid manifest: not an object')
   }
-
-  return parseResult.data
+  return manifestJson as McpbManifest
 }
 
 /**

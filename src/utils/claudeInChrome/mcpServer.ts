@@ -1,9 +1,21 @@
-import {
-  type ClaudeForChromeContext,
-  createClaudeForChromeMcpServer,
-  type Logger,
-  type PermissionMode,
-} from '@ant/claude-for-chrome-mcp'
+// import {
+//   type ClaudeForChromeContext,
+//   createClaudeForChromeMcpServer,
+//   type Logger,
+//   type PermissionMode,
+// } from '@ant/claude-for-chrome-mcp'
+type ClaudeForChromeContext = Record<string, unknown>
+type Logger = {
+  silly(msg: string, ...args: unknown[]): void
+  debug(msg: string, ...args: unknown[]): void
+  info(msg: string, ...args: unknown[]): void
+  warn(msg: string, ...args: unknown[]): void
+  error(msg: string, ...args: unknown[]): void
+}
+type PermissionMode = 'ask' | 'skip_all_permission_checks' | 'follow_a_plan'
+const createClaudeForChromeMcpServer = (_ctx: ClaudeForChromeContext): never => {
+  throw new Error('@ant/claude-for-chrome-mcp is not available')
+}
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { format } from 'util'
 import { shutdownDatadog } from '../../services/analytics/datadog.js'

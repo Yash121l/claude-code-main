@@ -1,7 +1,11 @@
 import { c as _c } from "react/compiler-runtime";
-import { getSentinelCategory } from '@ant/computer-use-mcp/sentinelApps';
-import type { CuPermissionRequest, CuPermissionResponse } from '@ant/computer-use-mcp/types';
-import { DEFAULT_GRANT_FLAGS } from '@ant/computer-use-mcp/types';
+// import { getSentinelCategory } from '@ant/computer-use-mcp/sentinelApps';
+// import type { CuPermissionRequest, CuPermissionResponse } from '@ant/computer-use-mcp/types';
+// import { DEFAULT_GRANT_FLAGS } from '@ant/computer-use-mcp/types';
+const getSentinelCategory = (_bundleId: string): null => null
+type CuPermissionRequest = { tccState?: { accessibility: boolean; screenRecording: boolean }; apps: { requestedName: string; resolved?: { bundleId: string; displayName: string }; alreadyGranted?: boolean }[]; requestedFlags: Record<string, boolean>; reason?: string; willHide?: string[] }
+type CuPermissionResponse = { granted: { bundleId: string; displayName: string; grantedAt: number }[]; denied: { bundleId: string; reason: string }[]; flags: Record<string, boolean> }
+const DEFAULT_GRANT_FLAGS: Record<string, boolean> = { clipboardRead: false, clipboardWrite: false, systemKeyCombos: false }
 import figures from 'figures';
 import * as React from 'react';
 import { useMemo, useState } from 'react';

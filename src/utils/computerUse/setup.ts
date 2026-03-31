@@ -1,4 +1,9 @@
-import { buildComputerUseTools } from '@ant/computer-use-mcp'
+// import { buildComputerUseTools } from '@ant/computer-use-mcp'
+const buildComputerUseTools = (
+  _caps: unknown,
+  _mode: unknown,
+  _apps?: unknown,
+): { name: string }[] => []
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 import { buildMcpToolName } from '../../services/mcp/mcpStringUtils.js'
