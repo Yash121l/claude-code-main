@@ -1,175 +1,310 @@
-# Claude Code 源码编译运行指南
+# Claude Code Exposure Archive, Python Porting Context, and OmX Workflow Notes
 
-## 环境要求
+> This repository keeps a **publicly exposed Claude Code source snapshot** that became accessible on **March 31, 2026** through a source map exposure in the npm distribution, together with companion essay/context notes and OmX-assisted documentation work.
 
-- [Bun](https://bun.sh) >= 1.3.11
-- Node.js >= 18.0.0
+---
 
-## 快速开始
+## Archive Context
 
-### 1. 安装依赖
+This repository is maintained by a **university student** studying:
 
-```bash
-bun install
-```
+- software supply-chain exposure and build artifact leaks
+- secure software engineering practices
+- agentic developer tooling architecture
+- defensive analysis of real-world CLI systems
 
-### 2. 编译
+This archive is intended to support:
 
-```bash
-bun run build
-```
+- educational study
+- security research practice
+- architecture review
+- discussion of packaging and release-process failures
 
-编译成功后会在根目录生成 `cli.js`（约 22MB）。
+Related research writing:
 
-### 3. 运行
+- [*Is legal the same as legitimate: AI reimplementation and the erosion of copyleft*](https://writings.hongminhee.org/2026/03/legal-vs-legitimate/)
 
-```bash
-# 设置 API Key
-export ANTHROPIC_API_KEY=your_api_key_here
+The essay is dated **March 9, 2026**, so it should be read as companion analysis that predates the **March 31, 2026** source exposure documented below.
 
-# 启动交互界面
-bun cli.js
+## Why this archive exists (and what it is not)
 
-# 或直接传入 prompt（非交互模式）
-bun cli.js -p "你好"
-```
+I initially kept this repository as a source-exposure archive so I could study the harness, tool wiring, and agent workflow. After sitting with the legal and ethical questions more seriously—and after reading the essay linked above—I no longer wanted the README to treat raw legality as the only frame.
 
-### 常用命令
+This branch therefore takes a smaller and more honest step: it keeps that essay in view as companion reading and makes the archive's research-only framing more explicit. This repository is still a mirrored TypeScript source snapshot for analysis; it is **not** a clean-room or Python rewrite.
 
-```bash
-bun cli.js --version       # 查看版本
-bun cli.js --help          # 查看帮助
-bun cli.js --model <model> # 指定模型
+## Built with `oh-my-codex`
+
+The README/essay archival work on this branch was AI-assisted and orchestrated with Yeachan Heo's [oh-my-codex (OmX)](https://github.com/Yeachan-Heo/oh-my-codex), a workflow layer built around Codex.
+
+- **`$team` mode:** used for coordinated parallel review of repo fit, wording risk, and final architecture consistency.
+- **`$ralph` mode:** used for persistent execution, verification, and final architect sign-off before claiming completion.
+- **Codex-driven workflow:** this documentation/contextualization pass was completed with Codex under OmX orchestration.
+
+### OmX workflow screenshots
+
+![OmX workflow screenshot 1](assets/omx/omx-readme-review-1.png)
+
+*Ralph/team orchestration view while the README and essay context were being reviewed in terminal panes.*
+
+![OmX workflow screenshot 2](assets/omx/omx-readme-review-2.png)
+
+*Split-pane review and verification flow during the final README wording pass.*
+
+It does **not** claim ownership of the original code, and it should not be interpreted as an official Anthropic repository.
+
+---
+
+## How the Public Snapshot Became Accessible
+
+[Chaofan Shou (@Fried_rice)](https://x.com/Fried_rice) publicly noted that Claude Code source material was reachable through a `.map` file exposed in the npm package:
+
+> **"Claude code source code has been leaked via a map file in their npm registry!"**
+>
+> — [@Fried_rice, March 31, 2026](https://x.com/Fried_rice/status/2038894956459290963)
+
+The published source map referenced unobfuscated TypeScript sources hosted in Anthropic's R2 storage bucket, which made the `src/` snapshot publicly downloadable.
+
+---
+
+## Repository Scope
+
+Claude Code is Anthropic's CLI for interacting with Claude from the terminal to perform software engineering tasks such as editing files, running commands, searching codebases, and coordinating workflows.
+
+This repository contains a mirrored `src/` snapshot for research and analysis.
+
+- **Public exposure identified on**: 2026-03-31
+- **Language**: TypeScript
+- **Runtime**: Bun
+- **Terminal UI**: React + [Ink](https://github.com/vadimdemedes/ink)
+- **Scale**: ~1,900 files, 512,000+ lines of code
+
+---
+
+## Directory Structure
+
+```text
+src/
+├── main.tsx                 # Entrypoint orchestration (Commander.js-based CLI path)
+├── commands.ts              # Command registry
+├── tools.ts                 # Tool registry
+├── Tool.ts                  # Tool type definitions
+├── QueryEngine.ts           # LLM query engine
+├── context.ts               # System/user context collection
+├── cost-tracker.ts          # Token cost tracking
+│
+├── commands/                # Slash command implementations (~50)
+├── tools/                   # Agent tool implementations (~40)
+├── components/              # Ink UI components (~140)
+├── hooks/                   # React hooks
+├── services/                # External service integrations
+├── screens/                 # Full-screen UIs (Doctor, REPL, Resume)
+├── types/                   # TypeScript type definitions
+├── utils/                   # Utility functions
+│
+├── bridge/                  # IDE and remote-control bridge
+├── coordinator/             # Multi-agent coordinator
+├── plugins/                 # Plugin system
+├── skills/                  # Skill system
+├── keybindings/             # Keybinding configuration
+├── vim/                     # Vim mode
+├── voice/                   # Voice input
+├── remote/                  # Remote sessions
+├── server/                  # Server mode
+├── memdir/                  # Persistent memory directory
+├── tasks/                   # Task management
+├── state/                   # State management
+├── migrations/              # Config migrations
+├── schemas/                 # Config schemas (Zod)
+├── entrypoints/             # Initialization logic
+├── ink/                     # Ink renderer wrapper
+├── buddy/                   # Companion sprite
+├── native-ts/               # Native TypeScript utilities
+├── outputStyles/            # Output styling
+├── query/                   # Query pipeline
+└── upstreamproxy/           # Proxy configuration
 ```
 
 ---
 
-## 项目说明
+## Architecture Summary
 
-本项目为 `@anthropic-ai/claude-code v2.1.88` 源码，使用 **Bun** 作为构建工具，基于 TypeScript + React (Ink) 构建的终端 AI 编程助手。
+### 1. Tool System (`src/tools/`)
 
-### 技术栈
+Every tool Claude Code can invoke is implemented as a self-contained module. Each tool defines its input schema, permission model, and execution logic.
 
-| 技术 | 用途 |
-|------|------|
-| Bun | 构建工具 + 运行时 |
-| TypeScript | 主要开发语言 |
-| React + Ink | 终端 UI 渲染 |
-| Zod v4 | 数据校验 |
-| @anthropic-ai/sdk | Anthropic API 客户端 |
-| @modelcontextprotocol/sdk | MCP 协议支持 |
+| Tool | Description |
+|---|---|
+| `BashTool` | Shell command execution |
+| `FileReadTool` | File reading (images, PDFs, notebooks) |
+| `FileWriteTool` | File creation / overwrite |
+| `FileEditTool` | Partial file modification (string replacement) |
+| `GlobTool` | File pattern matching search |
+| `GrepTool` | ripgrep-based content search |
+| `WebFetchTool` | Fetch URL content |
+| `WebSearchTool` | Web search |
+| `AgentTool` | Sub-agent spawning |
+| `SkillTool` | Skill execution |
+| `MCPTool` | MCP server tool invocation |
+| `LSPTool` | Language Server Protocol integration |
+| `NotebookEditTool` | Jupyter notebook editing |
+| `TaskCreateTool` / `TaskUpdateTool` | Task creation and management |
+| `SendMessageTool` | Inter-agent messaging |
+| `TeamCreateTool` / `TeamDeleteTool` | Team agent management |
+| `EnterPlanModeTool` / `ExitPlanModeTool` | Plan mode toggle |
+| `EnterWorktreeTool` / `ExitWorktreeTool` | Git worktree isolation |
+| `ToolSearchTool` | Deferred tool discovery |
+| `CronCreateTool` | Scheduled trigger creation |
+| `RemoteTriggerTool` | Remote trigger |
+| `SleepTool` | Proactive mode wait |
+| `SyntheticOutputTool` | Structured output generation |
+
+### 2. Command System (`src/commands/`)
+
+User-facing slash commands invoked with `/` prefix.
+
+| Command | Description |
+|---|---|
+| `/commit` | Create a git commit |
+| `/review` | Code review |
+| `/compact` | Context compression |
+| `/mcp` | MCP server management |
+| `/config` | Settings management |
+| `/doctor` | Environment diagnostics |
+| `/login` / `/logout` | Authentication |
+| `/memory` | Persistent memory management |
+| `/skills` | Skill management |
+| `/tasks` | Task management |
+| `/vim` | Vim mode toggle |
+| `/diff` | View changes |
+| `/cost` | Check usage cost |
+| `/theme` | Change theme |
+| `/context` | Context visualization |
+| `/pr_comments` | View PR comments |
+| `/resume` | Restore previous session |
+| `/share` | Share session |
+| `/desktop` | Desktop app handoff |
+| `/mobile` | Mobile app handoff |
+
+### 3. Service Layer (`src/services/`)
+
+| Service | Description |
+|---|---|
+| `api/` | Anthropic API client, file API, bootstrap |
+| `mcp/` | Model Context Protocol server connection and management |
+| `oauth/` | OAuth 2.0 authentication flow |
+| `lsp/` | Language Server Protocol manager |
+| `analytics/` | GrowthBook-based feature flags and analytics |
+| `plugins/` | Plugin loader |
+| `compact/` | Conversation context compression |
+| `policyLimits/` | Organization policy limits |
+| `remoteManagedSettings/` | Remote managed settings |
+| `extractMemories/` | Automatic memory extraction |
+| `tokenEstimation.ts` | Token count estimation |
+| `teamMemorySync/` | Team memory synchronization |
+
+### 4. Bridge System (`src/bridge/`)
+
+A bidirectional communication layer connecting IDE extensions (VS Code, JetBrains) with the Claude Code CLI.
+
+- `bridgeMain.ts` — Bridge main loop
+- `bridgeMessaging.ts` — Message protocol
+- `bridgePermissionCallbacks.ts` — Permission callbacks
+- `replBridge.ts` — REPL session bridge
+- `jwtUtils.ts` — JWT-based authentication
+- `sessionRunner.ts` — Session execution management
+
+### 5. Permission System (`src/hooks/toolPermission/`)
+
+Checks permissions on every tool invocation. Either prompts the user for approval/denial or automatically resolves based on the configured permission mode (`default`, `plan`, `bypassPermissions`, `auto`, etc.).
+
+### 6. Feature Flags
+
+Dead code elimination via Bun's `bun:bundle` feature flags:
+
+```typescript
+import { feature } from 'bun:bundle'
+
+// Inactive code is completely stripped at build time
+const voiceCommand = feature('VOICE_MODE')
+  ? require('./commands/voice/index.js').default
+  : null
+```
+
+Notable flags: `PROACTIVE`, `KAIROS`, `BRIDGE_MODE`, `DAEMON`, `VOICE_MODE`, `AGENT_TRIGGERS`, `MONITOR_TOOL`
 
 ---
 
-## 构建细节
+## Key Files in Detail
 
-### 编译命令（完整）
+### `QueryEngine.ts` (~46K lines)
 
-```bash
-bun build src/entrypoints/cli.tsx --outfile cli.js --target bun \
-  --define 'MACRO.VERSION="2.1.88"' \
-  --define 'MACRO.BUILD_TIME="2025-01-01T00:00:00Z"' \
-  --define 'MACRO.FEEDBACK_CHANNEL="https://github.com/anthropics/claude-code/issues"' \
-  --define 'MACRO.ISSUES_EXPLAINER="https://github.com/anthropics/claude-code/issues"' \
-  --define 'MACRO.NATIVE_PACKAGE_URL="https://npmjs.com"' \
-  --define 'MACRO.PACKAGE_URL="https://npmjs.com"' \
-  --define 'MACRO.VERSION_CHANGELOG=""'
-```
+The core engine for LLM API calls. Handles streaming responses, tool-call loops, thinking mode, retry logic, and token counting.
 
-`MACRO.*` 是 Bun 编译时宏，在源码中作为常量使用，必须在构建时注入。
+### `Tool.ts` (~29K lines)
 
-### 路径别名
+Defines base types and interfaces for all tools — input schemas, permission models, and progress state types.
 
-项目在 `bunfig.toml` 中配置了路径别名：
+### `commands.ts` (~25K lines)
 
-```toml
-[build]
-alias = { "src" = "./src", "react/compiler-runtime" = "react-compiler-runtime" }
-```
+Manages registration and execution of all slash commands. Uses conditional imports to load different command sets per environment.
 
-源码中 `src/xxx` 的绝对路径引用通过此别名解析到 `./src/xxx`。
+### `main.tsx`
+
+Commander.js-based CLI parser and React/Ink renderer initialization. At startup, it overlaps MDM settings, keychain prefetch, and GrowthBook initialization for faster boot.
 
 ---
 
-## 私有包存根说明
+## Tech Stack
 
-以下 4 个 Anthropic 内部私有包在 npm 上不公开，已在 `node_modules/` 中创建功能存根：
-
-| 包名 | 对应功能 | 影响 |
-|------|----------|------|
-| `@ant/claude-for-chrome-mcp` | Claude in Chrome 浏览器控制 | Chrome 集成不可用 |
-| `@ant/computer-use-mcp` | Computer Use 鼠标键盘控制 | Computer Use 不可用 |
-| `@anthropic-ai/mcpb` | MCP 插件包（.dxt 格式）安装 | 插件市场不可用 |
-| `@anthropic-ai/sandbox-runtime` | 沙箱文件/网络权限隔离 | 沙箱模式不可用 |
-
-核心对话、代码编辑、工具调用等主要功能不受影响。
-
----
-
-## 认证方式
-
-### 方式一：API Key（推荐开发用）
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-xxxx
-bun cli.js
-```
-
-### 方式二：OAuth 登录
-
-```bash
-bun cli.js
-# 启动后在界面中选择登录，走 claude.ai 授权流程
-```
-
-### 方式三：AWS Bedrock
-
-```bash
-export AWS_ACCESS_KEY_ID=xxx
-export AWS_SECRET_ACCESS_KEY=xxx
-export AWS_REGION=us-east-1
-bun cli.js --model anthropic.claude-3-5-sonnet-20241022-v2:0
-```
+| Category | Technology |
+|---|---|
+| Runtime | [Bun](https://bun.sh) |
+| Language | TypeScript (strict) |
+| Terminal UI | [React](https://react.dev) + [Ink](https://github.com/vadimdemedes/ink) |
+| CLI Parsing | [Commander.js](https://github.com/tj/commander.js) (extra-typings) |
+| Schema Validation | [Zod v4](https://zod.dev) |
+| Code Search | [ripgrep](https://github.com/BurntSushi/ripgrep) |
+| Protocols | [MCP SDK](https://modelcontextprotocol.io), LSP |
+| API | [Anthropic SDK](https://docs.anthropic.com) |
+| Telemetry | OpenTelemetry + gRPC |
+| Feature Flags | GrowthBook |
+| Auth | OAuth 2.0, JWT, macOS Keychain |
 
 ---
 
-## 修改源码后如何验证
+## Notable Design Patterns
 
-仓库中已包含编译好的 `cli.js`，可以直接 `bun cli.js` 运行，**不需要重新编译**。
+### Parallel Prefetch
 
-如果你修改了源码想验证效果，流程如下：
+Startup time is optimized by prefetching MDM settings, keychain reads, and API preconnect in parallel before heavy module evaluation begins.
 
-```bash
-# 1. 修改源码（src/ 目录下的任意文件）
-
-# 2. 重新编译
-bun run build
-
-# 3. 运行验证
-bun cli.js
+```typescript
+// main.tsx — fired as side-effects before other imports
+startMdmRawRead()
+startKeychainPrefetch()
 ```
 
-**注意**：以下模块涉及 Anthropic 内部私有包，修改后无法编译：
+### Lazy Loading
 
-- `src/utils/claudeInChrome/` — Chrome 集成
-- `src/utils/sandbox/` — 沙箱模式
-- `src/skills/bundled/claudeInChrome.ts`
-- `src/utils/plugins/mcpbHandler.ts`
+Heavy modules (OpenTelemetry, gRPC, analytics, and some feature-gated subsystems) are deferred via dynamic `import()` until actually needed.
 
-其他绝大部分功能（UI、命令、工具调用、对话逻辑等）均可正常编译验证。
+### Agent Swarms
+
+Sub-agents are spawned via `AgentTool`, with `coordinator/` handling multi-agent orchestration. `TeamCreateTool` enables team-level parallel work.
+
+### Skill System
+
+Reusable workflows defined in `skills/` are executed through `SkillTool`. Users can add custom skills.
+
+### Plugin Architecture
+
+Built-in and third-party plugins are loaded through the `plugins/` subsystem.
 
 ---
 
-## 常见问题
+## Research / Ownership Disclaimer
 
-**Q: 运行后界面卡住？**
-A: 正常现象，Ink (React 终端 UI) 启动需要 1-2 秒，等待即可。
-
-**Q: `MACRO is not defined` 报错？**
-A: 需要用 `bun run build` 重新编译，直接运行 `.ts` 源文件不行。
-
-**Q: API Error: `headers?.get is not a function`？**
-A: 升级 zod 到 v4：`bun add zod@^4`，然后重新 `bun run build`。
-
-**Q: `organization has been disabled` 报错？**
-A: API Key 所属组织被禁用。如果是环境变量设置的 Key，尝试 `unset ANTHROPIC_API_KEY` 后用 OAuth 登录。
+- This repository is an **educational and defensive security research archive** maintained by a university student.
+- It exists to study source exposure, packaging failures, and the architecture of modern agentic CLI systems.
+- The original Claude Code source remains the property of **Anthropic**.
+- This repository is **not affiliated with, endorsed by, or maintained by Anthropic**.
